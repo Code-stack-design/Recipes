@@ -6,21 +6,16 @@ def findAllRecipes(
     ingredients: List[List[str]],
     supplies: List[str]
 ) -> List[str]:
-    # Build graph: ingredient → list of recipes that need it
     graph = defaultdict(list)
-    # Track number of required ingredients (in-degree) per recipe
     in_degree = {recipe: len(reqs) for recipe, reqs in zip(recipes, ingredients)}
 
-    # Populate graph
     for recipe, reqs in zip(recipes, ingredients):
         for ing in reqs:
             graph[ing].append(recipe)
 
-    # Start with what's immediately available
     queue = deque(supplies)
     result = []
 
-    # BFS / Topological sort logic
     while queue:
         item = queue.popleft()
         for rec in graph.get(item, []):
@@ -28,13 +23,26 @@ def findAllRecipes(
             if in_degree[rec] == 0:
                 result.append(rec)
                 queue.append(rec)
-
     return result
 
-# Example use case:
+def prompt_user_input():
+    recipes = input("Enter recipes separated by commas (e.g., bread, sandwich, burger):\n").strip().split(",")
+    recipes = [r.strip() for r in recipes if r.strip()]
+
+    print("\nNow enter ingredients for each recipe, in the same order.")
+    print("Use semicolons (;) to separate recipes, and commas to separate ingredients within each.")
+    print("Example: yeast, flour; bread, meat; sandwich, cheese, meat")
+    raw = input("Ingredients:\n").strip()
+    parts = [p.strip() for p in raw.split(";") if p.strip()]
+    ingredients = [ [ing.strip() for ing in part.split(",") if ing.strip()] for part in parts ]
+
+    supplies = input("\nEnter your supplies separated by commas (e.g., flour, yeast, meat):\n").strip().split(",")
+    supplies = [s.strip() for s in supplies if s.strip()]
+
+    return recipes, ingredients, supplies
+
 if __name__ == "__main__":
-    recipes = ["bread"]
-    ingredients = [["flour", "salt"]]
-    supplies = ["flour", "salt"]
-    print(findAllRecipes(recipes, ingredients, supplies))
-    # Expected output: ["bread"]
+    recipes, ingredients, supplies = prompt_user_input()
+    result = findAllRecipes(recipes, ingredients, supplies)
+    print("\nBased on your inputs, you *can* make these recipes:")
+    print(result)
